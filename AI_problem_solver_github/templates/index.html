@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Spark Engine</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --gradient-start: #4a90e2;
+            --gradient-end: #357abd;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--light-color), #e9ecef);
+            color: var(--dark-color);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes quotesFade {
+            0% { opacity: 0; transform: translateY(10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        .step.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        select, textarea, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-size: 1rem;
+        }
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        button {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        .copy-button {
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+        }
+        .solution {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .loading-message {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .quote-container {
+            font-style: italic;
+            color: var(--dark-color);
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+            transition: opacity 1s ease;
+            opacity: 0;
+        }
+        .quote-author {
+            font-weight: 600;
+            margin-top: 10px;
+            color: var(--primary-color);
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1.5em;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        #pdf-list {
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+        #pdf-list div {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            margin-bottom: 8px;
+        }
+        #pdf-list .error {
+            background: #fdf2f2;
+            border: none;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="card step active" id="step1">
+        <h1 class="title">Cognitive Spark Engine</h1>
+        <div class="form-group">
+            <label for="topic">Topic</label>
+            <select id="topic">
+                <option value="">Select a topic</option>
+                <option value="Decision Making">Decision Making</option>
+                <option value="General Problem Solving">General Problem Solving</option>
+                <option value="Strategic Planning">Strategic Planning</option>
+                <option value="Risk Assessment">Risk Assessment</option>
+                <option value="Contingency Planning">Contingency Planning</option>
+                <option value="Conflict Resolution">Conflict Resolution</option>
+                <option value="Brainstorming">Brainstorming</option>
+                <option value="Creative Problem Solving">Creative Problem Solving</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="pdf-upload">Upload Reference PDFs (optional)</label>
+            <input type="file" id="pdf-upload" accept=".pdf" multiple>
+            <div id="pdf-list"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="goal">What are you trying to accomplish?</label>
+            <textarea id="goal"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="keyQuestions">What are the key questions you are trying to answer?</label>
+            <textarea id="keyQuestions"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="stakeholders">Who are the key stakeholders, and how are they related to this?</label>
+            <textarea id="stakeholders"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="constraints">What constraints or limitations exist?</label>
+            <textarea id="constraints"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="priorities">What are your top priorities related to this?</label>
+            <textarea id="priorities"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="resources">What resources are available to you related to this?</label>
+            <textarea id="resources"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="additionalInfo">Is there any other information you think is relevant?</label>
+            <textarea id="additionalInfo"></textarea>
+        </div>
+
+        <div id="loading1" class="loading">
+            <div class="loading-message">Generating questions...</div>
+        </div>
+        <button onclick="generateQuestions()" id="generateQuestionsBtn">Generate Follow-up Questions</button>
+    </div>
+
+    <div class="card step" id="step2">
+        <h2>Follow-up Questions</h2>
+        <div id="questions-container"></div>
+        <div id="loading2" class="loading">
+            <div class="loading-message">Generating outline...</div>
+        </div>
+        <div class="navigation">
+            <button onclick="showStep(1)">Back</button>
+            <button onclick="generateOutline()" id="generateOutlineBtn">Generate Outline</button>
+        </div>
+    </div>
+
+    <div class="card step" id="step3">
+        <h2>Solution Outline</h2>
+        <div id="outline-content" class="solution"></div>
+        <div class="form-group">
+            <label for="outline-feedback">Additional feedback or modifications needed:</label>
+            <textarea id="outline-feedback"></textarea>
+        </div>
+        <div id="loading3" class="loading">
+            <div class="loading-message">Synthesizing your comprehensive analysis. This process typically takes 3-8 minutes as we delve deep into each aspect.</div>
+            <div id="quote-container" class="quote-container"></div>
+        </div>
+        <div class="navigation">
+            <button onclick="showStep(2)">Back</button>
+            <button onclick="generateFullSolution()" id="generateSolutionBtn">Generate Full Analysis</button>
+        </div>
+    </div>
+
+    <div class="card step" id="step4">
+        <h2>Complete Analysis</h2>
+        <div class="navigation">
+            <button onclick="showStep(1)">New Analysis</button>
+            <button onclick="copySolution()" class="copy-button">Copy Spark Report</button>
+        </div>
+        <div id="solution-content" class="solution"></div>
+    </div>
+
+    <script>
+        const quotes = [
+            { text: "Physics is the only profession in which prophecy is not only accurate but routine.", author: "Neil deGrasse Tyson" },
+            { text: "If I have seen further, it is by standing on the shoulders of giants.", author: "Isaac Newton" },
+            { text: "The most beautiful experience we can have is the mysterious.", author: "Albert Einstein" },
+            { text: "Not only is the Universe stranger than we think, it is stranger than we can think.", author: "Werner Heisenberg" },
+            { text: "The universe is under no obligation to make sense to you.", author: "Neil deGrasse Tyson" },
+            { text: "I think nature's imagination is so much greater than man's, she's never going to let us relax.", author: "Richard Feynman" },
+            { text: "Somewhere, something incredible is waiting to be known.", author: "Carl Sagan" },
+            { text: "What I cannot create, I do not understand.", author: "Richard Feynman" },
+            { text: "Energy cannot be created or destroyed; it can only be changed from one form to another.", author: "Albert Einstein" },
+            { text: "The energy of the mind is the essence of life.", author: "Aristotle" }
+        ];
+
+        let currentStep = 1;
+        let aiQuestions = [];
+        let solutionContext = '';
+        let solutionOutline = '';
+        let solutionMarkdown = '';
+        let pdfContent = '';
+        let quoteInterval;
+        let usedQuotes = new Set();
+
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            document.querySelector(`#step${step}`).classList.add('active');
+            currentStep = step;
+            if (quoteInterval) {
+                clearInterval(quoteInterval);
+                quoteInterval = null;
+            }
+        }
+
+        function showLoading(step) {
+            document.getElementById(`loading${step}`).style.display = 'block';
+            document.getElementById(`step${step}`).querySelector('button').disabled = true;
+            if (step === 3) {
+                startQuoteRotation();
+            }
+        }
+
+        function hideLoading(step) {
+            document.getElementById(`loading${step}`).style.display = 'none';
+            document.getElementById(`step${step}`).querySelector('button').disabled = false;
+            if (step === 3 && quoteInterval) {
+                clearInterval(quoteInterval);
+                quoteInterval = null;
+            }
+        }
+
+        function getRandomQuote() {
+            if (usedQuotes.size === quotes.length) {
+                usedQuotes.clear();
+            }
+            
+            let availableQuotes = quotes.filter((_, index) => !usedQuotes.has(index));
+            let randomIndex = Math.floor(Math.random() * availableQuotes.length);
+            let quoteIndex = quotes.indexOf(availableQuotes[randomIndex]);
+            usedQuotes.add(quoteIndex);
+            
+            return quotes[quoteIndex];
+        }
+
+        function startQuoteRotation() {
+            const quoteContainer = document.getElementById('quote-container');
+            
+            function displayQuote() {
+                const quote = getRandomQuote();
+                quoteContainer.style.opacity = '0';
+                
+                setTimeout(() => {
+                    quoteContainer.innerHTML = `
+                        <div>${quote.text}</div>
+                        <div class="quote-author">— ${quote.author}</div>
+                    `;
+                    quoteContainer.style.opacity = '1';
+                }, 1000);
+            }
+
+            displayQuote();
+            quoteInterval = setInterval(displayQuote, 15000);
+        }
+async function handlePDFUpload(event) {
+            const files = event.target.files;
+            const listDiv = document.getElementById('pdf-list');
+            listDiv.innerHTML = '';
+            pdfContent = '';
+            
+            for (let file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/upload-pdf', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    if (response.ok) {
+                        pdfContent += data.text + '\n\n';
+                        listDiv.innerHTML += `<div>${file.name} uploaded successfully</div>`;
+                    } else {
+                        listDiv.innerHTML += `<div class="error">Error uploading ${file.name}: ${data.error}</div>`;
+                    }
+                } catch (error) {
+                    listDiv.innerHTML += `<div class="error">Error uploading ${file.name}: ${error.message}</div>`;
+                }
+            }
+        }
+
+        document.getElementById('pdf-upload').addEventListener('change', handlePDFUpload);
+
+        async function generateQuestions() {
+            const fields = {
+                goal: document.getElementById('goal').value,
+                keyQuestions: document.getElementById('keyQuestions').value,
+                stakeholders: document.getElementById('stakeholders').value,
+                constraints: document.getElementById('constraints').value,
+                priorities: document.getElementById('priorities').value,
+                resources: document.getElementById('resources').value,
+                additionalInfo: document.getElementById('additionalInfo').value
+            };
+
+            const topic = document.getElementById('topic').value;
+            
+            showLoading(1);
+            try {
+                const response = await fetch('/api/generate-questions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ topic, fields }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error);
+
+                aiQuestions = data.questions;
+                const container = document.getElementById('questions-container');
+                container.innerHTML = aiQuestions.map((q, i) => `
+                    <div class="form-group">
+                        <label>Q${i + 1}: ${q}</label>
+                        <textarea id="answer${i}"></textarea>
+                    </div>
+                `).join('');
+
+                showStep(2);
+            } catch (error) {
+                alert('Error generating questions: ' + error.message);
+            } finally {
+                hideLoading(1);
+            }
+        }
+
+        async function generateOutline() {
+            const answers = aiQuestions.map((_, i) => document.getElementById(`answer${i}`).value);
+            
+            const data = {
+                topic: document.getElementById('topic').value,
+                fields: {
+                    goal: document.getElementById('goal').value,
+                    keyQuestions: document.getElementById('keyQuestions').value,
+                    stakeholders: document.getElementById('stakeholders').value,
+                    constraints: document.getElementById('constraints').value,
+                    priorities: document.getElementById('priorities').value,
+                    resources: document.getElementById('resources').value,
+                    additionalInfo: document.getElementById('additionalInfo').value
+                },
+                questions: aiQuestions,
+                answers: answers
+            };
+
+            showLoading(2);
+            try {
+                const response = await fetch('/api/generate-outline', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                document.getElementById('outline-content').innerHTML = result.outline;
+                solutionContext = result.context;
+                solutionOutline = result.markdown;
+                showStep(3);
+            } catch (error) {
+                alert('Error generating outline: ' + error.message);
+            } finally {
+                hideLoading(2);
+            }
+        }
+
+        async function generateFullSolution() {
+            showLoading(3);
+            try {
+                const titleResponse = await fetch('/api/generate-title', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        outline: solutionOutline,
+                        context: solutionContext
+                    }),
+                });
+                
+                const titleData = await titleResponse.json();
+                if (!titleResponse.ok) throw new Error(titleData.error);
+
+                const feedback = document.getElementById('outline-feedback').value;
+                const data = {
+                    topic: document.getElementById('topic').value,
+                    context: solutionContext,
+                    outline: solutionOutline,
+                    feedback: feedback,
+                    pdf_content: pdfContent,
+                    title: titleData.title
+                };
+
+                const response = await fetch('/api/generate-full-solution', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                document.getElementById('solution-content').innerHTML = result.solution;
+                solutionMarkdown = result.markdown;
+                showStep(4);
+            } catch (error) {
+                alert('Error generating solution: ' + error.message);
+            } finally {
+                hideLoading(3);
+            }
+        }
+
+        async function copySolution() {
+            try {
+                await navigator.clipboard.writeText(solutionMarkdown);
+                const button = document.querySelector('.copy-button');
+                button.textContent = 'Report Copied!';
+                setTimeout(() => button.textContent = 'Copy Spark Report', 2000);
+            } catch (err) {
+                alert('Failed to copy report to clipboard');
+            }
+        }
+    </script>
+</body>
+</html>
